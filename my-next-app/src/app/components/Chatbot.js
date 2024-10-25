@@ -1,3 +1,5 @@
+"use client";  // Add this at the very top
+
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -16,10 +18,12 @@ const Chatbot = () => {
         const response = await axios.post('/api/generateContent', { message: input });
 
         // Assuming response has `data.message` as the chatbot's response
-        const botMessage = { text: response.data.message, sender: 'bot' };
+        const botMessage = { text: response.data.message, sender: 'bot' };  // Adjust response format here if necessary
         setMessages((prevMessages) => [...prevMessages, botMessage]);
       } catch (error) {
         console.error('Error fetching chatbot response:', error);
+        const botMessage = { text: "Sorry, there was an error.", sender: 'bot' };
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
       }
 
       // Clear input
