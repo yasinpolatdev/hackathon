@@ -12,8 +12,16 @@ import Sidebar from "./Dashboard/sidebar"; // Sidebar bileşenini import ettik
 const MODEL_NAME = "gemini-1.5-flash";
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY as string;
 
+const predefinedPrompts = [
+  "What are the benefits of using AI in healthcare?",
+  "Explain the importance of bioinformatics.",
+  "How does machine learning improve diagnostics?",
+  "What is the future of artificial intelligence?",
+];
+
 export default function Home() {
   const [data, setData] = useState<string>("");
+  const [selectedPrompt, setSelectedPrompt] = useState<string>("");
 
   async function runChat(prompt: string) {
     const genAI = new GoogleGenerativeAI(API_KEY);
@@ -67,8 +75,12 @@ export default function Home() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const prompt = (event.target as HTMLFormElement)?.prompt?.value || "";
+    const prompt = selectedPrompt || (event.target as HTMLFormElement)?.prompt?.value || "";
     runChat(prompt);
+  };
+
+  const handlePromptSelect = (prompt: string) => {
+    setSelectedPrompt(prompt);
   };
 
   const copyToClipboard = () => {
@@ -86,11 +98,27 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-500 opacity-50 animate-gradient" />
         <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm z-10 animate-fadeIn">
           <h1 className="text-2xl font-bold text-center mb-6 text-red-600">VisionAI</h1>
+          
+          {/* Predefined Prompt Selection */}
+          <div className="mb-4">
+            <label htmlFor="prompts" className="block text-gray-700">Select a prompt:</label>
+            <select
+              id="prompts"
+              className="w-full px-4 py-2 border border-red-600 bg-red-100 rounded-md text-gray-800 focus:outline-none focus:border-red-500 transition-transform transform duration-200 hover:scale-105"
+              onChange={(e) => handlePromptSelect(e.target.value)}
+            >
+              <option value="">-- Choose a prompt --</option>
+              {predefinedPrompts.map((prompt, index) => (
+                <option key={index} value={prompt}>{prompt}</option>
+              ))}
+            </select>
+          </div>
+
           <form onSubmit={onSubmit} className="space-y-4">
             <input
               type="text"
               name="prompt"
-              placeholder="Enter your prompt here..."
+              placeholder="Or enter your custom prompt here..."
               className="w-full px-4 py-2 border border-red-600 bg-red-100 rounded-md text-gray-800 focus:outline-none focus:border-red-500 transition-transform transform duration-200 hover:scale-105"
             />
             <button
@@ -101,6 +129,7 @@ export default function Home() {
             </button>
           </form>
         </div>
+
         {data && (
           <div className="mt-8 w-full max-w-sm p-4 bg-white border border-red-600 rounded-lg shadow-md animate-slideUp z-10">
             <h2 className="text-xl font-semibold text-red-600 mb-2 flex items-center justify-between">

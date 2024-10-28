@@ -41,7 +41,7 @@ const Sidebar = () => {
       </button>
 
       {/* Chat History */}
-      <div className="flex flex-col">
+      <div className="flex flex-col space-y-2"> {/* Added space-y-2 for vertical spacing */}
         <div
           className={`flex items-center ${
             isOpen ? 'justify-start space-x-2' : 'justify-center'
@@ -60,7 +60,7 @@ const Sidebar = () => {
       </div>
 
       {/* About Section */}
-      <div className="flex flex-col">
+      <div className="flex flex-col space-y-2">
         <div
           className={`flex items-center ${
             isOpen ? 'justify-start space-x-2' : 'justify-center'
@@ -77,7 +77,7 @@ const Sidebar = () => {
       </div>
 
       {/* Settings */}
-      <div className="flex flex-col">
+      <div className="flex flex-col space-y-2">
         <div
           className={`flex items-center ${
             isOpen ? 'justify-start space-x-2' : 'justify-center'
