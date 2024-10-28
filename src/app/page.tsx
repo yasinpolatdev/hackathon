@@ -21,7 +21,6 @@ const predefinedPrompts = [
 
 export default function Home() {
   const [data, setData] = useState<string>("");
-  const [selectedPrompt, setSelectedPrompt] = useState<string>("");
 
   async function runChat(prompt: string) {
     const genAI = new GoogleGenerativeAI(API_KEY);
@@ -73,14 +72,14 @@ export default function Home() {
     setData(response.text());
   }
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const prompt = selectedPrompt || (event.target as HTMLFormElement)?.prompt?.value || "";
+  const handlePromptClick = (prompt: string) => {
     runChat(prompt);
   };
 
-  const handlePromptSelect = (prompt: string) => {
-    setSelectedPrompt(prompt);
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const prompt = (event.target as HTMLFormElement)?.prompt?.value || "";
+    runChat(prompt);
   };
 
   const copyToClipboard = () => {
@@ -96,24 +95,26 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex flex-col items-center justify-center text-gray-800 font-sans w-full p-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-500 opacity-50 animate-gradient" />
+        
+        {/* Prompt Selection Area */}
+        <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm z-10 animate-fadeIn mb-4">
+          <h2 className="text-xl font-semibold text-red-600 mb-4">Select a prompt:</h2>
+          <div className="space-y-2">
+            {predefinedPrompts.map((prompt, index) => (
+              <button
+                key={index}
+                onClick={() => handlePromptClick(prompt)}
+                className="w-full text-left px-4 py-2 border border-red-600 bg-red-100 rounded-md text-gray-800 hover:bg-red-200 transition-transform transform duration-200 hover:scale-105"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Input Form Area */}
         <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm z-10 animate-fadeIn">
           <h1 className="text-2xl font-bold text-center mb-6 text-red-600">VisionAI</h1>
-          
-          {/* Predefined Prompt Selection */}
-          <div className="mb-4">
-            <label htmlFor="prompts" className="block text-gray-700">Select a prompt:</label>
-            <select
-              id="prompts"
-              className="w-full px-4 py-2 border border-red-600 bg-red-100 rounded-md text-gray-800 focus:outline-none focus:border-red-500 transition-transform transform duration-200 hover:scale-105"
-              onChange={(e) => handlePromptSelect(e.target.value)}
-            >
-              <option value="">-- Choose a prompt --</option>
-              {predefinedPrompts.map((prompt, index) => (
-                <option key={index} value={prompt}>{prompt}</option>
-              ))}
-            </select>
-          </div>
-
           <form onSubmit={onSubmit} className="space-y-4">
             <input
               type="text"
