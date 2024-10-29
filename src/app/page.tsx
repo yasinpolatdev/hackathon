@@ -5,24 +5,52 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { useState } from "react";
-import { FaCopy } from "react-icons/fa"; // Importing the copy icon from react-icons
-import Sidebar from "./Dashboard/sidebar"; // Sidebar bileşenini import ettik
+import { useState, useEffect } from "react";
+import { FaPaperclip, FaPaperPlane, FaCopy, FaAsterisk, FaTimes, FaCloudUploadAlt } from "react-icons/fa";
+import Sidebar from "./Dashboard/sidebar";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const MODEL_NAME = "gemini-1.5-flash";
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY as string;
 
-const predefinedPrompts = [
-  "What are the benefits of using AI in healthcare?",
-  "Explain the importance of bioinformatics.",
-  "How does machine learning improve diagnostics?",
-  "What is the future of artificial intelligence?",
-];
-
 export default function Home() {
-  const [data, setData] = useState<string>("");
+  const [data, setData] = useState<string>(""); 
+  const [imageBase64, setImageBase64] = useState<string | null>(null); 
+  const [inputValue, setInputValue] = useState<string>("");
+  const [prompts, setPrompts] = useState<string[]>([]);
+  const [loadingPrompts, setLoadingPrompts] = useState<boolean>(true); 
+  const [loadingData, setLoadingData] = useState<boolean>(false);
+  const [showCopyConfirmation, setShowCopyConfirmation] = useState<boolean>(false); 
+  const [showWelcome, setShowWelcome] = useState<boolean>(true);
+  const [showModal, setShowModal] = useState<boolean>(false); 
+
+  async function getPredefinedPrompts() {
+    setLoadingPrompts(true);
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+
+    const prompt = "Sağlık alanında yapay zekanın faydaları ve uygulamaları hakkında maksimum 7-8 kelimelik sorular oluştur. Başlık vs olmasın. sadece sorular olsun. numaralandırma da yapma asla.";
+
+    const result = await model.generateContent([prompt]);
+    const responseText = result.response.text();
+    const generatedPrompts = responseText
+      .split("\n")
+      .map(line => line.replace(/^[*#-]\s*/, "").trim())
+      .filter(line => line !== "")
+      .slice(0, 4);
+    setPrompts(generatedPrompts);
+    setLoadingPrompts(false);
+
+    setTimeout(() => setShowWelcome(false), 2000); 
+  }
+
+  useEffect(() => {
+    getPredefinedPrompts();
+  }, []);
 
   async function runChat(prompt: string) {
+    setLoadingData(true);
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
@@ -58,11 +86,11 @@ export default function Home() {
       history: [
         {
           role: "user",
-          parts: [{ text: "HELLO" }],
+          parts: [{ text: "MERHABA" }],
         },
         {
           role: "model",
-          parts: [{ text: "Hello there! How can I assist you today?" }],
+          parts: [{ text: "Merhaba! Bugün size nasıl yardımcı olabilirim?" }],
         },
       ],
     });
@@ -70,121 +98,206 @@ export default function Home() {
     const result = await chat.sendMessage(prompt);
     const response = result.response;
     setData(response.text());
+    setLoadingData(false);
   }
 
-  const handlePromptClick = (prompt: string) => {
-    runChat(prompt);
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageBase64(reader.result?.toString().split(",")[1] || null); 
+      setShowModal(false); 
+    };
+    reader.readAsDataURL(file);
   };
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const prompt = (event.target as HTMLFormElement)?.prompt?.value || "";
-    runChat(prompt);
-  };
+    const prompt = inputValue || "Bu görseli açıkla, ve not şeklinde çıkart. Başka hiçbir şey yazma.";
+    setLoadingData(true);
+
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+
+    const contentData = imageBase64
+      ? [
+          prompt,
+          {
+            inlineData: {
+              data: imageBase64,
+              mimeType: "image/jpeg",
+            },
+          },
+        ]
+      : [prompt];
+
+    const result = await model.generateContent(contentData);
+    setData(result.response.text());
+    setLoadingData(false);
+  }
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(data);
-    alert("Copied to clipboard!");
+    setShowCopyConfirmation(true);
+    setTimeout(() => setShowCopyConfirmation(false), 2000);
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
+    <div className="flex min-h-screen text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-900">
       <Sidebar />
 
-      {/* Main Content */}
-      <main className="flex flex-col items-center justify-center text-gray-800 font-sans w-full p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-500 opacity-50 animate-gradient" />
-        
-        {/* Prompt Selection Area */}
-        <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm z-10 animate-fadeIn mb-4">
-          <h2 className="text-xl font-semibold text-red-600 mb-4">Select a prompt:</h2>
-          <div className="space-y-2">
-            {predefinedPrompts.map((prompt, index) => (
-              <button
-                key={index}
-                onClick={() => handlePromptClick(prompt)}
-                className="w-full text-left px-4 py-2 border border-red-600 bg-red-100 rounded-md text-gray-800 hover:bg-red-200 transition-transform transform duration-200 hover:scale-105"
-              >
-                {prompt}
-              </button>
+      <main className="flex flex-col items-center justify-center w-full p-4 relative space-y-4">
+        {showWelcome && (
+          <div className="flex items-center text-3xl font-bold text-[#990000] animate-welcomeFade" style={{ fontFamily: "Syne, sans-serif" }}>
+            <FaAsterisk className="mr-2" />
+            {"VisionAI'a hoş geldiniz".split(" ").map((word, index) => (
+              <span key={index} className="inline-block animate-wordFade" style={{ animationDelay: `${index * 0.3}s` }}>
+                {word}&nbsp;
+              </span>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Input Form Area */}
-        <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm z-10 animate-fadeIn">
-          <h1 className="text-2xl font-bold text-center mb-6 text-red-600">VisionAI</h1>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <input
-              type="text"
-              name="prompt"
-              placeholder="Or enter your custom prompt here..."
-              className="w-full px-4 py-2 border border-red-600 bg-red-100 rounded-md text-gray-800 focus:outline-none focus:border-red-500 transition-transform transform duration-200 hover:scale-105"
-            />
-            <button
-              type="submit"
-              className="w-full py-2 bg-red-600 text-white rounded-md font-medium uppercase hover:bg-red-700 transition-all duration-300 hover:scale-105"
-            >
-              Submit
-            </button>
-          </form>
-        </div>
+        {!showWelcome && (
+          <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 w-full max-w-xl z-10 animate-slideDown">
+            {loadingPrompts ? (
+              <div className="flex justify-center items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-200"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {prompts.map((prompt, index) => (
+                  <button
+                    key={index}
+                    onClick={() => runChat(prompt)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-700 rounded-md text-gray-900 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-transform transform duration-200 hover:scale-102 text-center"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-        {data && (
-          <div className="mt-8 w-full max-w-sm p-4 bg-white border border-red-600 rounded-lg shadow-md animate-slideUp z-10">
-            <h2 className="text-xl font-semibold text-red-600 mb-2 flex items-center justify-between">
-              Output:
-              <button onClick={copyToClipboard} className="text-red-600 hover:text-red-800">
+        {!showWelcome && (
+          <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-3 w-full max-w-xl z-10 flex items-center space-x-2 animate-slideDown">
+            <form onSubmit={handleSubmit} className="flex-grow flex items-center space-x-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Mesajını yaz..."
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-900 dark:text-gray-200 focus:outline-none focus:border-gray-400 dark:focus:border-gray-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                className="cursor-pointer"
+              >
+                <FaPaperclip className={`text-xl ${imageBase64 ? "text-[#990000]" : "text-gray-400 dark:text-gray-500"}`} />
+              </button>
+              <button
+                type="submit"
+                className="bg-[#990000] p-2 rounded-full hover:bg-[#800000] transition-all duration-300"
+              >
+                <FaPaperPlane className="text-white text-lg" />
+              </button>
+            </form>
+          </div>
+        )}
+
+        {showModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg relative w-[600px] h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-4 right-4 text-gray-700 dark:text-gray-300 hover:text-red-600"
+              >
+                <FaTimes />
+              </button>
+              <FaCloudUploadAlt className="text-6xl text-gray-400 mb-4" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-4">
+                Dosyanızı Seçin veya Sürükleyip Bırakın
+              </h2>
+              <input
+                type="file"
+                onChange={handleImageUpload}
+                className="w-auto px-6 py-3 border border-transparent bg-[#990000] text-white rounded-lg cursor-pointer hover:bg-[#800000] focus:outline-none"
+              />
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                Desteklenen dosya türleri: JPG, PNG, JPEG
+              </p>
+            </div>
+          </div>
+        )}
+
+        {loadingData ? (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#990000]"></div>
+            <p className="ml-2 text-[#990000]">Yükleniyor...</p>
+          </div>
+        ) : data && (
+          <div className="w-full max-w-xl p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md animate-slideUp z-10 text-gray-900 dark:text-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-xl font-semibold text-[#990000]">Çıktı:</h2>
+              <button onClick={copyToClipboard} className="text-[#990000] hover:text-[#800000]">
                 <FaCopy />
               </button>
-            </h2>
-            <div dangerouslySetInnerHTML={{ __html: data }} className="text-gray-800 text-base"></div>
+            </div>
+            <ReactMarkdown
+              className="text-gray-700 dark:text-gray-300 text-base space-y-2"
+              children={data}
+              remarkPlugins={[remarkGfm]}
+            />
+          </div>
+        )}
+
+        {showCopyConfirmation && (
+          <div className="fixed bottom-8 right-8 bg-[#990000] text-white px-4 py-2 rounded-md shadow-md text-sm animate-fadeInOut">
+            Kopyalandı!
           </div>
         )}
       </main>
 
       <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        @keyframes welcomeFade {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        @keyframes wordFade {
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
-        @keyframes gradientAnimation {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
+        .animate-welcomeFade {
+          animation: welcomeFade 0.5s ease-in-out;
         }
-        .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out;
+        .animate-wordFade {
+          animation: wordFade 0.6s ease-in-out forwards;
+          display: inline-block;
+          font-family: 'Syne', sans-serif;
+        }
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translateY(10px); }
+          10% { opacity: 1; transform: translateY(0); }
+          90% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(10px); }
+        }
+        .animate-fadeInOut {
+          animation: fadeInOut 2s ease-in-out;
+        }
+        .animate-slideDown {
+          animation: welcomeFade 0.5s ease-in-out;
         }
         .animate-slideUp {
-          animation: slideUp 0.5s ease-out;
+          animation: fadeInOut 0.5s ease-in-out;
         }
-        .animate-gradient {
-          animation: gradientAnimation 5s ease infinite;
-          background-size: 200% 200%;
+        @media (max-width: 768px) {
+          .flex {
+            flex-direction: column;
+          }
         }
       `}</style>
     </div>
