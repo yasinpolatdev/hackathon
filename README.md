@@ -12,7 +12,6 @@ VisionAI is a web-based application enabling users to interact with a generative
 - [Customization](#customization)
 - [License](#license)
 
----
 
 # Features
 
@@ -26,16 +25,16 @@ VisionAI is a web-based application enabling users to interact with a generative
 
 # Prerequisites
 
-- **Node.js** (v14 or higher)
-- **npm** or **yarn
+- Node.js (v14 or higher)
+- npm or yarn
 
 # Steps
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/vision-ai-frontend.git
-   cd vision-ai-frontend
+   git clone https://github.com/yasinpolatdev/hackathon.git
+   cd hackathon
    ```
 
 2. Install dependencies:
@@ -74,8 +73,6 @@ Set up environment variables as follows:
    ```plaintext
    NEXT_PUBLIC_GEMINI_API_KEY=your_google_generative_ai_api_key
    ```
-
-Replace `your_google_generative_ai_api_key` with your actual Google Generative AI API key.
 
 # Usage
 

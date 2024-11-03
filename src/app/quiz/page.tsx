@@ -8,10 +8,8 @@ const MODEL_NAME = "gemini-1.5-flash";
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const TOTAL_QUESTIONS = 5;
 
-// prompt metnini burada doğrudan tanımlıyoruz
-const PROMPT_TEXT = "Biyoinformatik ile ilgili temel sorular sor";
+const PROMPT_TEXT = "Python kodlama alanında başlangıç seviyesinde özgün ve orijinal sorular içeren tek bir soru hazırla. Direkt soruyu sor. başlık vs olmadan yap. sadece soruyu ve cevapları ver. Her soru en fazla 3-4 cümle uzunluğunda ve yalnızca düz yazı formatında (sembolsüz ve tek satır) olsun. Örnek soru (tamamen aynı bu tarzda ve standartta olsun): DNA dizilerinde, hangi bazlar birbirleriyle tamamlayıcı eşleşme yapar? ⁠⁠a) Adenin-Guanin ⁠⁠b) Sitozin-Adenin ⁠⁠⁠c) Adenin-Timin ⁠⁠d) Guanin-Timin Cevap: c (sadece şıkkı yaz)";
 
-// Soru ve cevap seçeneklerini tanımlamak için arayüzler oluşturduk
 interface QuestionData {
   question: string;
   choices: string[];
@@ -97,8 +95,8 @@ export default function Gemini() {
     }
     setTimeout(() => {
       setSelectedAnswer(null);
-      setQuestionCount(prev => prev + 1); // Soruyu artır
-      fetchQuestion(); // Yeni soruyu çek
+      setQuestionCount(prev => prev + 1); 
+      fetchQuestion(); 
     }, 1500);
   }
 
@@ -123,7 +121,7 @@ export default function Gemini() {
   if (!started) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-gray-800 dark:text-white bg-transparent">
-        <div className="text-2xl md:text-3xl font-bold mb-4 text-red-600 text-center">MyUNI Alıştırmalarına Hoş Geldiniz</div>
+        <div className="text-2xl md:text-3xl font-bold mb-4 text-red-600 text-center">VisionI Alıştırmalarına Hoş Geldiniz</div>
         <p className="text-base md:text-lg mb-6 text-center">Bu alıştırmada biyoinformatik konularında sorulara cevap vereceksiniz. Bu eğitim modülü henüz alpha sürümündedir. Başarılar!</p>
         <button
           onClick={() => setStarted(true)}
@@ -223,7 +221,7 @@ export default function Gemini() {
               className="w-full md:w-auto px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300"
               onClick={() => {
                 setQuestionCount(prev => prev + 1);
-                fetchQuestion(); // Yeni soruyu çek
+                fetchQuestion(); 
               }}
             >
               Pas Geç

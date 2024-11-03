@@ -4,20 +4,19 @@ import { FaAsterisk } from 'react-icons/fa';
 import { HiOutlineChatAlt2, HiOutlineClock, HiOutlineInformationCircle, HiOutlineCog } from 'react-icons/hi';
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false); // Sidebar başlangıçta kapalı
-  const [isChatbotStarted, setIsChatbotStarted] = useState(false); // Chatbot durumu
-  const [sidebarWidth, setSidebarWidth] = useState('4rem'); // Genişliği başta dar olarak ayarla
+  const [isOpen, setIsOpen] = useState(false); 
+  const [isChatbotStarted, setIsChatbotStarted] = useState(false); 
+  const [sidebarWidth, setSidebarWidth] = useState('4rem'); 
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
   useEffect(() => {
-    // isOpen değiştiğinde genişlik ayarlarını güncelle
     if (isOpen) {
-      setSidebarWidth('16rem'); // Açık genişlik
+      setSidebarWidth('16rem');
     } else {
-      setSidebarWidth('4rem'); // Kapalı genişlik
+      setSidebarWidth('4rem'); 
     }
   }, [isOpen]);
 
@@ -88,7 +87,7 @@ const SidebarItem = ({ icon, label, onClick, isOpen }) => (
     }`}
   >
     {icon}
-    {isOpen && <span className="text-md ml-2">{label}</span>} {/* Label ile ikon arasına boşluk ekledik */}
+    {isOpen && <span className="text-md ml-2">{label}</span>} 
   </button>
 );
 
