@@ -89,7 +89,7 @@ Set up environment variables as follows:
 The `Sidebar` component is a collapsible menu that allows users to navigate different sections of the application and start the chatbot. Key functionalities include:
 
 - Expand/Collapse: A button at the top toggles the sidebar width.
-- Menu Items: Includes `Chatbot Başlat`, `Geçmiş`, `Hakkında`, and `Ayarlar` options, with icons from FontAwesome and HeroIcons.
+- Menu Items: Includes `Chatbot Başlat`, `Hakkımızda`, and `Quiz Ol` options, with icons from FontAwesome and HeroIcons.
 - Chatbot Status: If the chatbot is started, a status message is displayed in the sidebar.
   
 # Sidebar Properties
