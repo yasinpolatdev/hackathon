@@ -1,12 +1,17 @@
+// src/app/Dashboard/Sidebar.tsx
+
+"use client"; // Ensure this component is treated as a Client Component
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Import Next.js router for client-side navigation
 import { FaAsterisk } from 'react-icons/fa';
-import { HiOutlineChatAlt2, HiOutlineClock, HiOutlineInformationCircle, HiOutlineCog } from 'react-icons/hi';
+import { HiOutlineChatAlt2, HiOutlineInformationCircle, HiOutlineCog } from 'react-icons/hi';
+import { MdQuiz } from 'react-icons/md';
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false); 
-  const [isChatbotStarted, setIsChatbotStarted] = useState(false); 
-  const [sidebarWidth, setSidebarWidth] = useState('4rem'); 
+  const [isOpen, setIsOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState('4rem');
+  const router = useRouter(); // Use router to navigate to pages
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -16,21 +21,15 @@ const Sidebar = () => {
     if (isOpen) {
       setSidebarWidth('16rem');
     } else {
-      setSidebarWidth('4rem'); 
+      setSidebarWidth('4rem');
     }
   }, [isOpen]);
-
-  const startChatbot = () => {
-    setIsChatbotStarted(true);
-    console.log("Chatbot Başlatıldı!");
-  };
 
   return (
     <div
       className={`h-full flex flex-col p-4 transition-all duration-300 ease-in-out shadow-lg bg-gray-800 rounded-r-lg`}
       style={{ width: sidebarWidth, transition: 'width 0.3s ease-in-out' }}
     >
-      {/* Sidebar Aç/Kapa Butonu */}
       <button
         onClick={toggleSidebar}
         className={`flex items-center mb-6 text-white transition-colors duration-200 hover:text-gray-300 ${
@@ -41,40 +40,29 @@ const Sidebar = () => {
         {isOpen && <h2 className="text-lg font-semibold text-gray-100 ml-2">VisionAI</h2>}
       </button>
 
-      {/* Menü Öğeleri */}
       <div className="flex flex-col space-y-3 mt-4">
         <SidebarItem
           icon={<HiOutlineChatAlt2 size={20} />}
           label="Chatbot Başlat"
-          onClick={startChatbot}
+          onClick={() => router.push('/')}
           isOpen={isOpen}
         />
-        <SidebarItem
-          icon={<HiOutlineClock size={20} />}
-          label="Geçmiş"
-          onClick={() => console.log("Geçmiş")}
-          isOpen={isOpen}
-        />
+
+        {/* Redirect "Hakkında" to /hakkimizda */}
         <SidebarItem
           icon={<HiOutlineInformationCircle size={20} />}
           label="Hakkında"
-          onClick={() => console.log("Hakkında")}
+          onClick={() => router.push('/hakkimizda')}
           isOpen={isOpen}
         />
+
         <SidebarItem
-          icon={<HiOutlineCog size={20} />}
-          label="Ayarlar"
-          onClick={() => console.log("Ayarlar")}
+          icon={<MdQuiz size={20} />}
+          label="Quiz Ol"
+          onClick={() => router.push('/quiz')}
           isOpen={isOpen}
         />
       </div>
-
-      {/* Chatbot Durumunu Koşullu Olarak Göster */}
-      {isChatbotStarted && isOpen && (
-        <div className="mt-4 text-sm text-green-500">
-          Chatbot Başlatıldı!
-        </div>
-      )}
     </div>
   );
 };
@@ -87,7 +75,7 @@ const SidebarItem = ({ icon, label, onClick, isOpen }) => (
     }`}
   >
     {icon}
-    {isOpen && <span className="text-md ml-2">{label}</span>} 
+    {isOpen && <span className="text-md ml-2">{label}</span>}
   </button>
 );
 
