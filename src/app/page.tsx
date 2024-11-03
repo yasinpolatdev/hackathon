@@ -6,7 +6,7 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { useState, useEffect } from "react";
-import { FaPaperclip, FaPaperPlane, FaCopy, FaAsterisk, FaTimes, FaCloudUploadAlt } from "react-icons/fa";
+import { FaPaperclip, FaPaperPlane, FaRegCopy, FaAsterisk, FaTimes, FaCloudUploadAlt } from "react-icons/fa";
 import Sidebar from "./Dashboard/sidebar";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -30,7 +30,7 @@ export default function Home() {
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-    const prompt = "Sağlık alanında yapay zekanın faydaları ve uygulamaları hakkında maksimum 7-8 kelimelik sorular oluştur. Başlık vs olmasın. sadece sorular olsun. numaralandırma da yapma asla.";
+    const prompt = "Biyoinformatik alanı hakkında maksimum 7-8 kelimelik sorular oluştur. Başlık vs olmasın. sadece sorular olsun. numaralandırma da yapma asla.";
 
     const result = await model.generateContent([prompt]);
     const responseText = result.response.text();
@@ -47,6 +47,8 @@ export default function Home() {
 
   useEffect(() => {
     getPredefinedPrompts();
+    const interval = setInterval(getPredefinedPrompts, 10000); // Refresh every 10 seconds
+    return () => clearInterval(interval); // Cleanup on component unmount
   }, []);
 
   async function runChat(prompt: string) {
@@ -150,13 +152,35 @@ export default function Home() {
 
       <main className="flex flex-col items-center justify-center w-full p-4 relative space-y-4">
         {showWelcome && (
-          <div className="flex items-center text-3xl font-bold text-[#990000] animate-welcomeFade" style={{ fontFamily: "Syne, sans-serif" }}>
+          <div className="flex items-center text-3xl font-bold text-[#990000] dark:text-white animate-welcomeFade" style={{ fontFamily: "Syne, sans-serif" }}>
             <FaAsterisk className="mr-2" />
             {"VisionAI'a hoş geldiniz".split(" ").map((word, index) => (
               <span key={index} className="inline-block animate-wordFade" style={{ animationDelay: `${index * 0.3}s` }}>
                 {word}&nbsp;
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Output Section */}
+        {loadingData ? (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#990000] dark:border-white"></div>
+            <p className="ml-2 text-[#990000] dark:text-white">Yükleniyor...</p>
+          </div>
+        ) : data && (
+          <div className="w-full max-w-xl p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md animate-slideUp z-10 text-gray-900 dark:text-gray-200 relative">
+            <button
+              onClick={copyToClipboard}
+              className="absolute bottom-2 right-2 text-gray-500 hover:text-[#990000] dark:text-gray-300 dark:hover:text-gray-400 transition-all"
+            >
+              <FaRegCopy className="text-sm" />
+            </button>
+            <ReactMarkdown
+              className="text-gray-700 dark:text-gray-300 text-base space-y-2"
+              children={data}
+              remarkPlugins={[remarkGfm]}
+            />
           </div>
         )}
 
@@ -182,6 +206,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* Input Section */}
         {!showWelcome && (
           <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-3 w-full max-w-xl z-10 flex items-center space-x-2 animate-slideDown">
             <form onSubmit={handleSubmit} className="flex-grow flex items-center space-x-2">
@@ -197,13 +222,13 @@ export default function Home() {
                 onClick={() => setShowModal(true)}
                 className="cursor-pointer"
               >
-                <FaPaperclip className={`text-xl ${imageBase64 ? "text-[#990000]" : "text-gray-400 dark:text-gray-500"}`} />
+                <FaPaperclip className={`text-xl ${imageBase64 ? "text-[#990000] dark:text-white" : "text-gray-400 dark:text-gray-500"}`} />
               </button>
               <button
                 type="submit"
-                className="bg-[#990000] p-2 rounded-full hover:bg-[#800000] transition-all duration-300"
+                className="bg-[#990000] dark:bg-white p-2 rounded-full hover:bg-[#800000] dark:hover:bg-gray-300 transition-all duration-300"
               >
-                <FaPaperPlane className="text-white text-lg" />
+                <FaPaperPlane className="text-white dark:text-gray-900 text-lg" />
               </button>
             </form>
           </div>
@@ -225,7 +250,7 @@ export default function Home() {
               <input
                 type="file"
                 onChange={handleImageUpload}
-                className="w-auto px-6 py-3 border border-transparent bg-[#990000] text-white rounded-lg cursor-pointer hover:bg-[#800000] focus:outline-none"
+                className="w-auto px-6 py-3 border border-transparent bg-[#990000] dark:bg-white text-white dark:text-gray-900 rounded-lg cursor-pointer hover:bg-[#800000] focus:outline-none"
               />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
                 Desteklenen dosya türleri: JPG, PNG, JPEG
@@ -234,29 +259,8 @@ export default function Home() {
           </div>
         )}
 
-        {loadingData ? (
-          <div className="flex justify-center items-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#990000]"></div>
-            <p className="ml-2 text-[#990000]">Yükleniyor...</p>
-          </div>
-        ) : data && (
-          <div className="w-full max-w-xl p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md animate-slideUp z-10 text-gray-900 dark:text-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-semibold text-[#990000]">Çıktı:</h2>
-              <button onClick={copyToClipboard} className="text-[#990000] hover:text-[#800000]">
-                <FaCopy />
-              </button>
-            </div>
-            <ReactMarkdown
-              className="text-gray-700 dark:text-gray-300 text-base space-y-2"
-              children={data}
-              remarkPlugins={[remarkGfm]}
-            />
-          </div>
-        )}
-
         {showCopyConfirmation && (
-          <div className="fixed bottom-8 right-8 bg-[#990000] text-white px-4 py-2 rounded-md shadow-md text-sm animate-fadeInOut">
+          <div className="fixed bottom-8 right-8 bg-[#990000] dark:bg-white text-white dark:text-gray-900 px-4 py-2 rounded-md shadow-md text-sm animate-fadeInOut">
             Kopyalandı!
           </div>
         )}
