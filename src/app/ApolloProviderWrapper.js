@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { ApolloProvider } from '@apollo/client';
 import client from './apolloclient';
 
-const App = React.lazy(() => import('./App'));
+const App = React.lazy(() => import('./chat/App'));
 
 // Hata yakalamak için ErrorBoundary bileşeni
 class ErrorBoundary extends React.Component {

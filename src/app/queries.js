@@ -5,12 +5,12 @@ import PropTypes from 'prop-types';
 const GET_CHATBOT_RESPONSES = gql`
   query GetChatbotResponses($userInput: String!) {
     chatbotResponses(where: { userQuery_contains: $userInput }) {
-       id
-        Email // Yeni alan: Gerekli
-        responseText
-        Geçmiş     // Yeni alan: başlık
-        Hakkında // Yeni alan: oluşturulma tarihi
-        Ayarlar   // Yeni alan: öncelik
+      id
+      email  // Renamed to follow camelCase
+      responseText
+      title  // Renamed Geçmiş to title
+      createdAt  // Renamed Hakkında to createdAt
+      priority  // Renamed Ayarlar to priority
     }
   }
 `;
@@ -44,4 +44,4 @@ Chatbot.propTypes = {
   userMessage: PropTypes.string.isRequired,
 };
 
-export default memo(Chatbot);
+export default memoChatbot;
