@@ -1,37 +1,11 @@
-import { ApolloClient, InMemoryCache, HttpLink, ApolloLink } from '@apollo/client';
-import { onError } from '@apollo/client/link/error';
-
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path }) =>
-      console.error(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
-    );
-  }
-  if (networkError) console.error(`[Network error]: ${networkError}`);
-});
-
-const httpLink = new HttpLink({
-  uri: process.env.REACT_APP_GRAPHQL_URI,
-  headers: {
-    Authorization: `Bearer ${process.env.REACT_APP_GRAPHQL_TOKEN}`
-  }
-});
+import { ApolloClient, InMemoryCache } from "@apollo/client";
 
 const client = new ApolloClient({
-  link: ApolloLink.from([errorLink, httpLink]),
-  cache: new InMemoryCache({
-    typePolicies: {
-      Query: {
-        fields: {
-          chatbotResponses: {
-            merge(existing = [], incoming) {
-              return [...existing, ...incoming];
-            }
-          }
-        }
-      }
-    }
-  }),
+   uri: 'https://management-eu-west-2.hygraph.com/graphql', // Highgraph API URL
+   cache: new InMemoryCache(),
+   headers: {
+      Authorization: `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImdjbXMtbWFpbi1wcm9kdWN0aW9uIn0.eyJ2ZXJzaW9uIjozLCJpYXQiOjE3MzAyOTU3ODQsImF1ZCI6WyJodHRwczovL2FwaS1ldS13ZXN0LTIuaHlncmFwaC5jb20vdjIvY20ydW43NDhmMDR3ejA3djBjZTZtcWxvNS9tYXN0ZXIiLCJtYW5hZ2VtZW50LW5leHQuZ3JhcGhjbXMuY29tIl0sImlzcyI6Imh0dHBzOi8vbWFuYWdlbWVudC1ldS13ZXN0LTIuaHlncmFwaC5jb20vIiwic3ViIjoiNzkzNjE0MTMtZmNkOC00NzQ4LTk1MWUtZTVhMzM1YzJhOTI1IiwianRpIjoiY20ydnhmbzk1MDNlNzA3bWxjYXh6NWJ4aSJ9.t8L556tF_sSdv2djBQiYdCPRNLBx57y1QqnN46H17-O4fCnCdhEL0_AwiCICvZbsYhs_7zOVS4lpMMmI5nMnYb8bkXdl9BIwqv5sxGf7fjjrS3aTiA4sB4yZQOnbRlicUYYP7IdL9HBYuz-npEwfuuzC4D3wmsJDz0D82NbJ0nuiDbPKHyUBfKpOxjvTdhsbNK9m0Imy-hwU71lTUbXcKDdi0Tsi9CYZlPWQy8bibMiAY7wWWJqCRm72389gcBcgpLiPxhnWINY4Ms2-Mv3QHj35xE6eXosIG14ySm4KwkEXy_vInrdwQ-fSIZrNxpJCKmcdRcOsViLx2DgkMDuebvnOtlD6UrKj4TycHYfI9nZW0sY3jdP_-sNWJbQNtHdFZH2pIKxMpcAZGePBpv24OzCmbbMgbay820sF-z25jzVVCAUg8mIVCO5cLWSW7y97wkKFl9UDVvtlVn2WKurKVS8jOlGPYvu90RWj_2aZYfGhlLs1yCeUs_9HtYr-MfgM8pGN713YclKaRoJNR1rAKSicvAb4u4XTV7WuYwv3cXb-dspR204XughC4OHPq8evzjyvbIpeG3NJCqFYWNOfvT2Y9c-h1Jg3Gug5lHCpxFrXtH_jPo8FlZwjO_YBcTDAtVtB0UoO2sB41tdDvH046XMSrJv_YFPv7ft3eOwJfwk`
+   }
 });
 
 export default client;
