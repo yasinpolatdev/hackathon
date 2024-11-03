@@ -30,7 +30,7 @@ export default function Home() {
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-    const prompt = "Biyoinformatik alanı hakkında maksimum 7-8 kelimelik sorular oluştur. Başlık vs olmasın. sadece sorular olsun. numaralandırma da yapma asla.";
+    const prompt = "Python alanı hakkında maksimum 7-8 kelimelik sorular oluştur. Başlık vs olmasın. sadece sorular olsun. numaralandırma da yapma asla.";
 
     const result = await model.generateContent([prompt]);
     const responseText = result.response.text();
@@ -47,8 +47,8 @@ export default function Home() {
 
   useEffect(() => {
     getPredefinedPrompts();
-    const interval = setInterval(getPredefinedPrompts, 10000); // Refresh every 10 seconds
-    return () => clearInterval(interval); // Cleanup on component unmount
+    const interval = setInterval(getPredefinedPrompts, 10000); 
+    return () => clearInterval(interval); 
   }, []);
 
   async function runChat(prompt: string) {
